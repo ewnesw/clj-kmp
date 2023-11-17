@@ -30,8 +30,8 @@
   (loop [elem [:ports :volumes :environment]
          ret []]
     (if (empty? elem)
-      (println ret)
-      (recur (drop 1 elem) (if (contains? service elem) (conj ret elem) ret)))))
+      ret
+      (recur (drop 1 elem) (if (contains? ((first (first service)) service) (first elem)) (conj ret (first elem)) ret)))))
 
 (defn gen-manifest
   [service]
@@ -46,4 +46,4 @@
       (gen-manifest service)
       (recur (apply dissoc service (first service))))))
 
-(check-config (:seafile (:services (parse-file "resources/docker-compose.seafile.yml"))))
+(parse-services "resources/docker-compose.seafile.yml")
