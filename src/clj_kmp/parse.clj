@@ -45,5 +45,3 @@
     (when-not (empty? service)
       (gen-manifest (first service))
       (recur (apply dissoc service (first service))))))
-
-(parse-services "resources/docker-compose.seafile.yml")
