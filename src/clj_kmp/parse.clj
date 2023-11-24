@@ -8,6 +8,8 @@
 
 (def base-deploy (parse-file "resources/deploy.yml"))
 
+(def manifest-options [:ports :volumes :environment])
+
 (defn walk-replace
   [map val replace]
   (walk/postwalk (fn [elem] (if (= elem val) replace elem)) map))
@@ -22,26 +24,30 @@
   (yaml/generate-string (gen-deploy service) :dumper-options {:flow-style :block}))
 
 (defn gen-file
-  [service]
+  [service options]
   (spit (str (name (first service)) ".deploy.yml") (gen-string service)))
+
+(defn switch-opts
+  [elem service]
+  (case elem
+    :ports (println (elem service))
+    :environment (println "env")
+    :volumes (println "volumes")
+    ))
 
 (defn check-config
   [service]
-  (loop [elem [:ports :volumes :environment]
-         ret []]
-    (if (empty? elem)
-      ret
-      (recur (drop 1 elem) (if (contains? ((first service) service) (first elem)) (conj ret (first elem)) ret)))))
-
-(defn gen-manifest
-  [service]
-  (if (empty? (check-config service))
-              (gen-file service)
-              (println "oe")))
+  (let [svc (second service)]
+    (loop [elem manifest-options 
+           ret {}]
+      (if (empty? elem)
+        ret
+        (recur (drop 1 elem) (if (contains? svc (first elem)) (conj ret (switch-opts (first elem) svc)) ret))))))
 
 (defn parse-services
   [file]
   (loop [service (:services (parse-file file))]
     (when-not (empty? service)
-      (gen-manifest (first service))
+      (gen-file (first service) (check-config (first service)))
       (recur (apply dissoc service (first service))))))
+
