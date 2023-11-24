@@ -27,10 +27,16 @@
   [service options]
   (spit (str (name (first service)) ".deploy.yml") (gen-string service)))
 
+(println base-deploy)
+
+(defn gen-ports
+  [ports]
+  ())
+
 (defn switch-opts
   [elem service]
   (case elem
-    :ports (println (elem service))
+    :ports (gen-ports (elem service))
     :environment (println "env")
     :volumes (println "volumes")
     ))
@@ -51,3 +57,4 @@
       (gen-file (first service) (check-config (first service)))
       (recur (apply dissoc service (first service))))))
 
+(parse-services "resources/docker-compose.seafile.yml")
