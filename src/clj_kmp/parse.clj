@@ -1,6 +1,8 @@
 (ns clj-kmp.parse
  (:require [clj-yaml.core :as yaml]
-           [clojure.walk :as walk]))
+           [clojure.walk :as walk]
+           [flatland.ordered.map :refer (ordered-map)]
+           [clojure.string :as str]))
 
 (defn parse-file
   [file]
@@ -27,11 +29,13 @@
   [service options]
   (spit (str (name (first service)) ".deploy.yml") (gen-string service)))
 
-(println base-deploy)
-
 (defn gen-ports
   [ports]
-  ())
+  (loop [port ports
+         ret ()]
+    (if (empty? port)
+      (ordered-map :ports ret)
+      (recur (rest port) (conj ret (ordered-map :containerPort (last (str/split (first port) #":"))))))))
 
 (defn switch-opts
   [elem service]
@@ -57,4 +61,4 @@
       (gen-file (first service) (check-config (first service)))
       (recur (apply dissoc service (first service))))))
 
-(parse-services "resources/docker-compose.seafile.yml")
+;;(parse-services "resources/docker-compose.seafile.yml")
