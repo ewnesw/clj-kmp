@@ -37,6 +37,27 @@
       (println (yaml/generate-string (ordered-map :ports ret) :dumper-options {:flow-style :block}))
       (recur (rest port) (conj ret (ordered-map :containerPort (first (str/split (last (str/split (first port) #":")) #"/")) :protocol (if (re-find #"udp$" (first port)) "UDP" "TCP")))))))
 
+(defn seq-port
+  [port]
+  (let [vals (str/split port #"-")]
+    (if (< (first vals) (second vals))
+      (println "temp yes")
+      (println "temp no"))))
+
+(defn aled
+  [arg]
+  (let [port (str/split arg #":")]
+    (if (re-find #"[0-9]{1,5}(-[0-9]{1,5})?(\/udp)?" port)
+      (if (re-find #"-" port)
+              (seq-port port)
+              port)
+      ((println (str "error parsing ports : " port))
+       (System/exit 1)))))
+
+(defn validate-ports
+  [ports]
+  (reduce (fn [p n] (conj p (aled n))) () ports))
+
 (defn switch-opts
   [elem service]
   (case elem
@@ -61,4 +82,4 @@
       (gen-file (first service) (check-config (first service)))
       (recur (apply dissoc service (first service))))))
 
-;;(parse-services "resources/docker-compose.seafile.yml")
+(parse-services "resources/docker-compose.seafile.yml")
