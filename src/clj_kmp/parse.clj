@@ -34,8 +34,8 @@
   (loop [port ports
          ret ()]
     (if (empty? port)
-      (ordered-map :ports ret)
-      (recur (rest port) (conj ret (ordered-map :containerPort (last (str/split (first port) #":"))))))))
+      (println (yaml/generate-string (ordered-map :ports ret) :dumper-options {:flow-style :block}))
+      (recur (rest port) (conj ret (ordered-map :containerPort (first (str/split (last (str/split (first port) #":")) #"/")) :protocol (if (re-find #"udp$" (first port)) "UDP" "TCP")))))))
 
 (defn switch-opts
   [elem service]
