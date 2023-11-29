@@ -27,7 +27,7 @@
 
 (defn gen-file
   [service options]
-  (spit (str (name (first service)) ".deploy.yml") (gen-string service)))
+  (println (str (name (first service)) ".deploy.yml") (gen-string service)))
 
 (defn gen-ports
   [ports]
@@ -37,31 +37,39 @@
       (println (yaml/generate-string (ordered-map :ports ret) :dumper-options {:flow-style :block}))
       (recur (rest port) (conj ret (ordered-map :containerPort (first (str/split (last (str/split (first port) #":")) #"/")) :protocol (if (re-find #"udp$" (first port)) "UDP" "TCP")))))))
 
-(defn seq-port
-  [port]
-  (let [vals (str/split port #"-")]
-    (if (< (first vals) (second vals))
-      (println "temp yes")
-      (println "temp no"))))
+(defn seq-range
+  [min max]
+  (loop [incr min
+         ret ()]
+    (if (= incr max)
+      (conj ret incr)
+      (recur (inc incr) (conj ret incr)))))
 
-(defn aled
+(defn check-range
+  [port]
+  (let [vals (map #(Integer/parseInt %) (str/split port #"-"))]
+    (if (< (first vals) (second vals))
+      (map str (seq-range (first vals) (second vals)))
+      ((println (str "error : " (first vals) " superior than " (second vals)))))))
+
+(defn validates-port
   [arg]
-  (let [port (str/split arg #":")]
-    (if (re-find #"[0-9]{1,5}(-[0-9]{1,5})?(\/udp)?" port)
+  (let [port (last (str/split arg #":"))]
+    (if (re-matches #"[0-9]{1,5}(-[0-9]{1,5})?(\/udp)?" port)
       (if (re-find #"-" port)
-              (seq-port port)
-              port)
+              (check-range port)
+              (list port))
       ((println (str "error parsing ports : " port))
        (System/exit 1)))))
 
-(defn validate-ports
+(defn red-ports
   [ports]
-  (reduce (fn [p n] (conj p (aled n))) () ports))
+  (reduce (fn [p n] (into p (validates-port n))) () ports))
 
 (defn switch-opts
   [elem service]
   (case elem
-    :ports (gen-ports (elem service))
+    :ports (gen-ports (red-ports (elem service)))
     :environment (println "env")
     :volumes (println "volumes")
     ))
