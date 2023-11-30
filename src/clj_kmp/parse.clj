@@ -41,15 +41,15 @@
   [min max]
   (loop [incr min
          ret ()]
-    (if (= incr max)
-      (conj ret incr)
+    (if (> incr max)
+      ret
       (recur (inc incr) (conj ret incr)))))
 
 (defn check-range
-  [port]
-  (let [vals (map #(Integer/parseInt %) (str/split port #"-"))]
+  [port udp?]
+  (let [vals (map #(Integer/parseInt %) (str/split (first (str/split port #"/")) #"-"))]
     (if (< (first vals) (second vals))
-      (map str (seq-range (first vals) (second vals)))
+      (map #(str % (when udp? "/udp")) (seq-range (first vals) (second vals)))
       ((println (str "error : " (first vals) " superior than " (second vals)))))))
 
 (defn validates-port
@@ -57,7 +57,7 @@
   (let [port (last (str/split arg #":"))]
     (if (re-matches #"[0-9]{1,5}(-[0-9]{1,5})?(\/udp)?" port)
       (if (re-find #"-" port)
-              (check-range port)
+              (check-range port (re-find #"/udp" port))
               (list port))
       ((println (str "error parsing ports : " port))
        (System/exit 1)))))
