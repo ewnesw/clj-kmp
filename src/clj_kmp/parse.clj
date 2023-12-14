@@ -16,25 +16,32 @@
   [map val replace]
   (walk/postwalk (fn [elem] (if (= elem val) replace elem)) map))
 
+
 (defn gen-deploy
   [service]
   (let [svc service]
     (walk-replace (walk-replace base-deploy "service_name" (first svc)) "image_name" (get-in (second svc) [:image]))))
 
+;; (println (update-in base-deploy [:spec :template :spec :containers] #(assoc (first %) :ports 7))) 
+
+(defn add-ports
+  [base ports]
+  (update-in base [:spec :template :spec :containers] #(assoc (first %) :ports ports)))
+
 (defn gen-string
-  [service]
-  (yaml/generate-string (gen-deploy service) :dumper-options {:flow-style :block}))
+  [service options]
+  (yaml/generate-string (if options (add-ports (gen-deploy service) options) (gen-deploy service)) :dumper-options {:flow-style :block}))
 
 (defn gen-file
   [service options]
-  (println (str (name (first service)) ".deploy.yml") (gen-string service)))
+  (spit (str (name (first service)) ".deploy.yml") (gen-string service options)))
 
 (defn gen-ports
   [ports]
   (loop [port ports
          ret ()]
     (if (empty? port)
-      (println (yaml/generate-string (ordered-map :ports ret) :dumper-options {:flow-style :block}))
+      (ordered-map :ports ret)
       (recur (rest port) (conj ret (ordered-map :containerPort (first (str/split (last (str/split (first port) #":")) #"/")) :protocol (if (re-find #"udp$" (first port)) "UDP" "TCP")))))))
 
 (defn seq-range
