@@ -23,7 +23,7 @@ services:
     container_name: seafile
     ports:
       - "80:80"
-#     - "443:443"  # If https is enabled, cancel the comment.
+      - "440-443/udp"  # If https is enabled, cancel the comment.
     volumes:
       - /opt/seafile-data:/shared   # Requested, specifies the path to Seafile data persistent store.
     environment:

@@ -5,8 +5,9 @@
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [org.clojure/tools.cli "1.0.219"]
-                 [clj-commons/clj-yaml "1.0.27"]]
-  :main ^:skip-aot kompose.core
+                 [clj-commons/clj-yaml "1.0.27"]
+                 [org.flatland/ordered "1.15.11"]]
+  :main ^:skip-aot clj-kmp.core
   :target-path "target/%s"
   :plugins [[cider/cider-nrepl "0.24.0"]]
   :profiles {:uberjar {:aot :all}})
