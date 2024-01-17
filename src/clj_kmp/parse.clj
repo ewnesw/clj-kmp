@@ -34,7 +34,7 @@
 
 (defn gen-file
   [service options]
-  (spit (str (name (first service)) ".deploy.yml") (gen-string service options)))
+  (println (str (name (first service)) ".deploy.yml") (gen-string service options))) ;; replace println by spit when done testing
 
 (defn gen-ports
   [ports]
@@ -73,11 +73,18 @@
   [ports]
   (reduce (fn [p n] (into p (validates-port n))) () ports))
 
+(defn red-ordered
+  [envs]
+  (reduce (fn [p n] (let [val (str/split n #"=")]
+                      (assoc p (keyword (first val)) (second val)))) (ordered-map) envs))
+
 (defn switch-opts
   [elem service]
   (case elem
     :ports (gen-ports (red-ports (elem service)))
-    :environment (println "env")
+    :environment (if (not= (type (elem service)) (type ordered-map)) 
+                        (println (red-ordered (elem service))) 
+                        (println (elem service)))
     :volumes (println "volumes")
     ))
 
@@ -97,4 +104,4 @@
       (gen-file (first service) (check-config (first service)))
       (recur (apply dissoc service (first service))))))
 
-(parse-services "resources/docker-compose.seafile.yml")
+(parse-services "resources/docker-compose.tmate.yml")
