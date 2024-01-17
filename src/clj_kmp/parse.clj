@@ -82,7 +82,7 @@
   [elem service]
   (case elem
     :ports (gen-ports (red-ports (elem service)))
-    :environment (if (not= (type (elem service)) (type ordered-map)) 
+    :environment (if (not= (type (elem service)) (type (ordered-map))) 
                         (println (red-ordered (elem service))) 
                         (println (elem service)))
     :volumes (println "volumes")
@@ -104,4 +104,4 @@
       (gen-file (first service) (check-config (first service)))
       (recur (apply dissoc service (first service))))))
 
-(parse-services "resources/docker-compose.tmate.yml")
+(parse-services "resources/docker-compose.seafile.yml")
